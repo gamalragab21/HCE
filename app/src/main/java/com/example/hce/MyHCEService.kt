@@ -5,7 +5,6 @@ import android.content.Intent
 import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
 import android.util.Log
-import androidx.core.app.NotificationCompat
 
 class MyHCEService : HostApduService() {
 
