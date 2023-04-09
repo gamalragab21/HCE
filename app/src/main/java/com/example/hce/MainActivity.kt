@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.editText.requestFocus()
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
 
         binding.button.setOnClickListener {

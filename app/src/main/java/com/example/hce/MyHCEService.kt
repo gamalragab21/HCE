@@ -5,10 +5,12 @@ import android.content.Intent
 import android.nfc.cardemulation.HostApduService
 import android.os.Bundle
 import android.util.Log
+import androidx.core.app.NotificationCompat
 
 class MyHCEService : HostApduService() {
 
     companion object {
+        const val CHANNEL_ID = "hce_service_channel_id"
         val TAG = "Host Card Emulator"
         val STATUS_SUCCESS = "9000"
         val STATUS_FAILED = "6F00"
@@ -21,6 +23,20 @@ class MyHCEService : HostApduService() {
     }
 
     private var valueToSend: String = "empty value"
+
+//    override fun onCreate() {
+//        super.onCreate()
+//
+//        // Create a notification to display when the service is running in the foreground
+//        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+//            .setContentTitle("HCE Service")
+//            .setContentText("Service is running")
+//            .setSmallIcon(R.drawable.ic_launcher_foreground)
+//            .build()
+//
+//        // Start the service in the foreground
+//        startForeground(1, notification)
+//    }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         if (intent.hasExtra("ndefMessage")) {
@@ -56,7 +72,8 @@ class MyHCEService : HostApduService() {
         }
 
         if (hexCommandApdu.substring(10, 24) == AID) {
-            return Utils.hexStringToByteArray(valueToSend.toByteArray().joinToString("") { "%02x".format(it) })
+            return Utils.hexStringToByteArray(
+                valueToSend.toByteArray().joinToString("") { "%02x".format(it) })
         } else {
             return Utils.hexStringToByteArray(STATUS_FAILED)
         }
