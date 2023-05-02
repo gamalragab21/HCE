@@ -1,6 +1,8 @@
 package com.example.hce
 
 object Utils {
+
+    const val BrodCastAction="broadcast_my-custom-action"
     fun hexStringToByteArray(data: String): ByteArray =
         data.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 

@@ -44,8 +44,15 @@ class MyHCEService : HostApduService() {
         }
 
         Log.e(TAG, "onStartCommand() | NDEF: $valueToSend")
+        sendDataToBrodCast("onStartCommand() | NDEF: $valueToSend")
 
         return Service.START_STICKY
+    }
+
+    private fun sendDataToBrodCast(data: String) {
+        val intent = Intent(Utils.BrodCastAction)
+        intent.putExtra("myData", data)
+        sendBroadcast(intent)
     }
 
     override fun onDeactivated(reason: Int) {
@@ -53,33 +60,55 @@ class MyHCEService : HostApduService() {
     }
 
     override fun processCommandApdu(command: ByteArray?, extras: Bundle?): ByteArray {
-        Log.e(TAG, "processCommandApdu: start", )
+        Log.e(TAG, "processCommandApdu: start")
+        sendDataToBrodCast("Reader Start Process Command with Apdu :$command")
         if (command == null) {
+            sendDataToBrodCast("The Command Apdu is nullable , status is :$STATUS_FAILED")
             return Utils.hexStringToByteArray(STATUS_FAILED)
         }
 
         val hexCommandApdu = Utils.toHex2(command)
-        Log.e(TAG, "processCommandApdu: hexCommandApdu ${hexCommandApdu}", )
+        sendDataToBrodCast(" Apdu of reader as hex :$hexCommandApdu")
+
+        Log.e(TAG, "processCommandApdu: hexCommandApdu ${hexCommandApdu}")
 
         if (hexCommandApdu.length < MIN_APDU_LENGTH) {
-            Log.e(TAG, "processCommandApdu: STATUS_FAILED", )
+            Log.e(TAG, "processCommandApdu: STATUS_FAILED")
+            sendDataToBrodCast("The Command Apdu is short with length ${hexCommandApdu.length},  status is :$STATUS_FAILED")
+
             return Utils.hexStringToByteArray(STATUS_FAILED)
         }
 
         if (hexCommandApdu.substring(0, 2) != DEFAULT_CLA) {
-            Log.e(TAG, "processCommandApdu: CLA_NOT_SUPPORTED", )
+            Log.e(TAG, "processCommandApdu: CLA_NOT_SUPPORTED")
             return Utils.hexStringToByteArray(CLA_NOT_SUPPORTED)
         }
 
         if (hexCommandApdu.substring(2, 4) != SELECT_INS) {
-            Log.e(TAG, "processCommandApdu: INS_NOT_SUPPORTED", )
+            Log.e(TAG, "processCommandApdu: INS_NOT_SUPPORTED")
             return Utils.hexStringToByteArray(INS_NOT_SUPPORTED)
         }
 
         return if (hexCommandApdu.substring(10, 24) == AID) {
-            Log.e(TAG, "processCommandApdu: ${Utils.toHex(valueToSend.toByteArray())}", )
+            sendDataToBrodCast(
+                "Process Done With correct apdu and AID the value as hex string is: ${
+                    Utils.toHex(
+                        valueToSend.toByteArray()
+                    )
+                } "
+            )
+
+            Log.e(TAG, "processCommandApdu: ${Utils.toHex(valueToSend.toByteArray())}")
             Utils.hexStringToByteArray(Utils.toHex(valueToSend.toByteArray()))
         } else {
+            sendDataToBrodCast(
+                "Your application id not correct we received this ${
+                    hexCommandApdu.substring(
+                        10,
+                        24
+                    )
+                }, and it must be like is : $AID , status is $STATUS_FAILED"
+            )
             Utils.hexStringToByteArray(STATUS_FAILED)
         }
     }
