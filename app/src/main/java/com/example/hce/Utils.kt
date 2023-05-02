@@ -1,24 +1,13 @@
 package com.example.hce
 
 object Utils {
-    private val HEX_CHARS = "0123456789ABCDEF"
-    fun hexStringToByteArray(data: String): ByteArray {
+    fun hexStringToByteArray(data: String): ByteArray =
+        data.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
-        val result = ByteArray(data.length / 2)
-
-        for (i in 0 until data.length step 2) {
-            val firstIndex = HEX_CHARS.indexOf(data[i]);
-            val secondIndex = HEX_CHARS.indexOf(data[i + 1]);
-
-            val octet = firstIndex.shl(4).or(secondIndex)
-            result.set(i.shr(1), octet.toByte())
-        }
-
-        return result
-    }
+    fun toHex(byteArray: ByteArray): String = byteArray.joinToString("") { "%02x".format(it) }
 
     private val HEX_CHARS_ARRAY = "0123456789ABCDEF".toCharArray()
-    fun toHex(byteArray: ByteArray): String {
+    fun toHex2(byteArray: ByteArray): String {
         val result = StringBuffer()
 
         byteArray.forEach {
@@ -31,4 +20,6 @@ object Utils {
 
         return result.toString()
     }
+
+    fun toByteArray(text:String)= text.toByteArray()
 }

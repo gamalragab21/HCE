@@ -16,6 +16,7 @@ class MyHCEService : HostApduService() {
         val CLA_NOT_SUPPORTED = "6E00"
         val INS_NOT_SUPPORTED = "6D00"
         val AID = "A0000002471001"
+        val AID2 = "F0010203040506"
         val SELECT_INS = "A4"
         val DEFAULT_CLA = "00"
         val MIN_APDU_LENGTH = 12
@@ -42,7 +43,7 @@ class MyHCEService : HostApduService() {
             valueToSend = intent.getStringExtra("ndefMessage") ?: ""
         }
 
-        Log.e(TAG, "onStartCommand() | NDEF$valueToSend")
+        Log.e(TAG, "onStartCommand() | NDEF: $valueToSend")
 
         return Service.START_STICKY
     }
@@ -51,30 +52,35 @@ class MyHCEService : HostApduService() {
         Log.d(TAG, "Deactivated: $reason")
     }
 
-    override fun processCommandApdu(commandApdu: ByteArray?, extras: Bundle?): ByteArray {
-        if (commandApdu == null) {
+    override fun processCommandApdu(command: ByteArray?, extras: Bundle?): ByteArray {
+        Log.e(TAG, "processCommandApdu: start", )
+        if (command == null) {
             return Utils.hexStringToByteArray(STATUS_FAILED)
         }
 
-        val hexCommandApdu = Utils.toHex(commandApdu)
+        val hexCommandApdu = Utils.toHex2(command)
+        Log.e(TAG, "processCommandApdu: hexCommandApdu ${hexCommandApdu}", )
 
         if (hexCommandApdu.length < MIN_APDU_LENGTH) {
+            Log.e(TAG, "processCommandApdu: STATUS_FAILED", )
             return Utils.hexStringToByteArray(STATUS_FAILED)
         }
 
         if (hexCommandApdu.substring(0, 2) != DEFAULT_CLA) {
+            Log.e(TAG, "processCommandApdu: CLA_NOT_SUPPORTED", )
             return Utils.hexStringToByteArray(CLA_NOT_SUPPORTED)
         }
 
         if (hexCommandApdu.substring(2, 4) != SELECT_INS) {
+            Log.e(TAG, "processCommandApdu: INS_NOT_SUPPORTED", )
             return Utils.hexStringToByteArray(INS_NOT_SUPPORTED)
         }
 
-        if (hexCommandApdu.substring(10, 24) == AID) {
-            return Utils.hexStringToByteArray(
-                valueToSend.toByteArray().joinToString("") { "%02x".format(it) })
+        return if (hexCommandApdu.substring(10, 24) == AID) {
+            Log.e(TAG, "processCommandApdu: ${Utils.toHex(valueToSend.toByteArray())}", )
+            Utils.hexStringToByteArray(Utils.toHex(valueToSend.toByteArray()))
         } else {
-            return Utils.hexStringToByteArray(STATUS_FAILED)
+            Utils.hexStringToByteArray(STATUS_FAILED)
         }
     }
 }
